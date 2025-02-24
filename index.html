@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Portfolio Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            position: relative;
+            margin: 0;
+        }
+
+        #terminal, #trades-section {
+            width: 48%;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
+        }
+
+            #terminal:hover, #trades-section:hover {
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            }
+
+            #terminal h1, #trades-section h2 {
+                margin-top: 0;
+                color: #333;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+        #balance-card {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+
+        #balance {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        #output {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 10px;
+            background: #fafafa;
+            margin-top: 20px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.85em;
+            line-height: 1.4;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #trades li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .stock-name {
+            font-weight: bold;
+        }
+
+        .profit {
+            color: #2ecc71;
+        }
+
+        .loss {
+            color: #e74c3c;
+        }
+
+        #command-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        #command {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+            #command:focus {
+                border-color: #3498db;
+            }
+
+        #suggestions {
+            position: absolute;
+            top: 100%;
+            background: white;
+            border: 1px solid #ddd;
+            width: 70%;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+            .suggestion-item:hover {
+                background: #f0f0f0;
+            }
+
+        #submitBtn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-left: 10px;
+        }
+
+            #submitBtn:hover {
+                background: linear-gradient(135deg, #2980b9, #1f6a93);
+            }
+
+        #auth-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-decoration: none;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+            #auth-link:hover {
+                background: linear-gradient(135deg, #2980b9, #1f6a93);
+            }
+
+        #auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        #auth-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 320px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        #auth-modal input {
+            display: block;
+            width: calc(100% - 20px);
+            margin: 0 auto 10px auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            outline: none;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+            #auth-modal input:focus {
+                border-color: #3498db;
+            }
+
+        #auth-modal button {
+            margin: 5px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+            #auth-modal button:hover {
+                background: linear-gradient(135deg, #2980b9, #1f6a93);
+            }
+
+        h2 i {
+            margin-right: 10px;
+            color: #3498db;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            #terminal, #trades-section {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: ${{ secrets.FIREBASE }};
+            authDomain: "virtual-portfolio-1d556.firebaseapp.com",
+            projectId: "virtual-portfolio-1d556",
+            storageBucket: "virtual-portfolio-1d556.appspot.com",
+            messagingSenderId: "873441571164",
+            appId: "1:873441571164:web:4675876ece520d401d1199",
+            measurementId: "G-5E4SGT1E7S"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        const FMP_API_KEY = ${{ secrets.FMP }};
+
+        const marketData = {
+            'NASDAQ': { suffix: '', fmpCode: 'NASDAQ' },
+            'NYSE': { suffix: '', fmpCode: 'NYSE' },
+            'XLON': { suffix: '.L', fmpCode: 'LSE' },
+        };
+
+        let currentMarket = 'NASDAQ';
+        let balance = 10000;
+        let trades = [];
+
+        async function fetchStockPrice(symbol) {
+            const alphaVantageKey = ${{ secrets.ALPHA_VANATGE }};
+        const finnhubKey = ${{ secrets.FINNHUB }};
+            const marketInfo = marketData[currentMarket] || marketData['NASDAQ'];
+            let fullSymbol = symbol;
+
+            if (marketInfo.suffix && !symbol.includes('.')) {
+                fullSymbol = `${symbol}${marketInfo.suffix}`;
+            }
+
+            const alphaUrl = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${fullSymbol}&apikey=${alphaVantageKey}`;
+            const finnhubUrl = `https://finnhub.io/api/v1/quote?symbol=${fullSymbol}&token=${finnhubKey}`;
+
+            try {
+                const response = await fetch(alphaUrl);
+                const data = await response.json();
+                const price = parseFloat(data["Global Quote"]?.["05. price"]);
+                if (!isNaN(price)) return price;
+            } catch (error) {
+                // Silent fail
+            }
+
+            try {
+                const response = await fetch(finnhubUrl);
+                const data = await response.json();
+                const price = parseFloat(data.c);
+                if (!isNaN(price)) return price;
+            } catch (error) {
+                // Silent fail
+            }
+
+            return null;
+        }
+
+        async function saveUserData() {
+            if (auth.currentUser) {
+                try {
+                    await setDoc(doc(db, "users", auth.currentUser.uid), { balance, trades }, { merge: true });
+                } catch (error) {
+                    console.error("Error saving to Firestore:", error.message);
+                }
+            }
+        }
+
+        function setStorage(key, value) {
+            localStorage.setItem(key, JSON.stringify(value));
+            if (key === "balance") balance = value;
+            if (key === "trades") trades = value;
+            saveUserData(); // Call synchronously after state change
+        }
+
+        function getStorage(key, defaultValue) {
+            const storedValue = localStorage.getItem(key);
+            return storedValue ? JSON.parse(storedValue) : defaultValue;
+        }
+
+        async function loadUserData() {
+            if (auth.currentUser) {
+                try {
+                    const userDoc = await getDoc(doc(db, "users", auth.currentUser.uid));
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        balance = data.balance !== undefined ? data.balance : 10000;
+                        trades = data.trades || [];
+                        console.log("Loaded data from Firestore - Trades:", trades);
+                    } else {
+                        balance = 10000;
+                        trades = [];
+                        await saveUserData();
+                        console.log("Created new user data in Firestore - Trades:", trades);
+                    }
+                    localStorage.setItem("balance", JSON.stringify(balance));
+                    localStorage.setItem("trades", JSON.stringify(trades));
+                } catch (error) {
+                    console.error("Error loading from Firestore:", error.message);
+                    alert("Failed to load your data from Firestore. Using local data instead. Check the console for details.");
+                    balance = getStorage("balance", 10000);
+                    trades = getStorage("trades", []);
+                    console.log("Loaded data from local storage due to Firestore error - Trades:", trades);
+                }
+            } else {
+                balance = getStorage("balance", 10000);
+                trades = getStorage("trades", []);
+                console.log("Loaded data from local storage (no user) - Trades:", trades);
+            }
+            await updateDisplay(); // Ensure UI updates with loaded data
+        }
+
+        async function processCommand() {
+            const input = document.getElementById("command").value.trim();
+            document.getElementById("command").value = "";
+            const args = input.split(" ");
+            const output = document.getElementById("output");
+            const command = args[0].toLowerCase();
+
+            if (command === "help") {
+                output.innerHTML += "Commands: buy {stock} {amount}, sell {stock} {amount}, short {stock} {amount}, cover {stock} {amount}, market {exchange}, reset<br>";
+                output.innerHTML += "Available markets: NASDAQ, NYSE, XLON.<br>";
+            } else if (command === "buy" && args.length === 3) {
+                const stock = args[1].toUpperCase();
+                const amount = parseFloat(args[2]);
+
+                if (isNaN(amount) || amount <= 0) {
+                    output.innerHTML += "Invalid amount.<br>";
+                    return;
+                }
+                if (amount > balance) {
+                    output.innerHTML += "Insufficient balance to buy.<br>";
+                    return;
+                }
+
+                const price = await fetchStockPrice(stock);
+                if (!price) {
+                    output.innerHTML += `Failed to fetch stock price for ${stock} in ${currentMarket}. Check symbol or market.<br>`;
+                    return;
+                }
+
+                const shares = amount / price;
+                trades.push({ stock, price, shares, type: "buy" });
+                balance -= amount;
+
+                setStorage("balance", balance);
+                setStorage("trades", trades);
+                await updateDisplay();
+                output.innerHTML += `Bought $${amount.toFixed(2)} of ${stock} at $${price.toFixed(2)}/share.<br>`;
+            } else if (command === "sell" && args.length === 3) {
+                const stock = args[1].toUpperCase();
+                const amount = parseFloat(args[2]);
+
+                if (isNaN(amount) || amount <= 0) {
+                    output.innerHTML += "Invalid amount.<br>";
+                    return;
+                }
+
+                const buyTrades = trades.filter(t => t.stock === stock && t.type === "buy");
+                if (buyTrades.length === 0) {
+                    output.innerHTML += `No positions found for ${stock} to sell.<br>`;
+                    return;
+                }
+
+                const price = await fetchStockPrice(stock);
+                if (!price) {
+                    output.innerHTML += `Failed to fetch stock price for ${stock}.<br>`;
+                    return;
+                }
+
+                let sharesToSell = amount / price;
+                let remaining = sharesToSell;
+                let totalProfitLoss = 0;
+
+                for (const trade of buyTrades) {
+                    if (remaining <= 0) break;
+                    const sellShares = Math.min(trade.shares, remaining);
+                    const profitLoss = (price - trade.price) * sellShares;
+
+                    trade.shares -= sellShares;
+                    balance += price * sellShares;
+                    totalProfitLoss += profitLoss;
+                    remaining -= sellShares;
+
+                    if (trade.shares === 0) {
+                        trades = trades.filter(t => t !== trade);
+                    }
+                }
+
+                if (remaining > 0) {
+                    output.innerHTML += "Insufficient shares to complete sale.<br>";
+                    return;
+                }
+
+                setStorage("balance", balance);
+                setStorage("trades", trades);
+                await updateDisplay();
+                output.innerHTML += `<span class="${totalProfitLoss >= 0 ? 'profit' : 'loss'}">Sold $${amount.toFixed(2)} of ${stock} at $${price.toFixed(2)}/share. P/L: $${totalProfitLoss.toFixed(2)}</span><br>`;
+            } else if (command === "short" && args.length === 3) {
+                const stock = args[1].toUpperCase();
+                const amount = parseFloat(args[2]);
+
+                if (isNaN(amount) || amount <= 0) {
+                    output.innerHTML += "Invalid amount.<br>";
+                    return;
+                }
+                if (amount > balance) {
+                    output.innerHTML += "Insufficient balance to short.<br>";
+                    return;
+                }
+
+                const price = await fetchStockPrice(stock);
+                if (!price) {
+                    output.innerHTML += `Failed to fetch stock price for ${stock}.<br>`;
+                    return;
+                }
+
+                const shares = amount / price;
+                trades.push({ stock, price, shares, type: "short" });
+                balance -= amount;
+
+                setStorage("balance", balance);
+                setStorage("trades", trades);
+                await updateDisplay();
+                output.innerHTML += `Shorted $${amount.toFixed(2)} of ${stock} at $${price.toFixed(2)}/share.<br>`;
+            } else if (command === "cover" && args.length === 3) {
+                const stock = args[1].toUpperCase();
+                const amount = parseFloat(args[2]);
+
+                if (isNaN(amount) || amount <= 0) {
+                    output.innerHTML += "Invalid amount.<br>";
+                    return;
+                }
+
+                const shortTrades = trades.filter(t => t.stock === stock && t.type === "short");
+                if (shortTrades.length === 0) {
+                    output.innerHTML += `No short positions found for ${stock} to cover.<br>`;
+                    return;
+                }
+
+                const price = await fetchStockPrice(stock);
+                if (!price) {
+                    output.innerHTML += `Failed to fetch stock price for ${stock}.<br>`;
+                    return;
+                }
+
+                let sharesToCover = amount / price;
+                let remaining = sharesToCover;
+                let totalProfitLoss = 0;
+
+                for (const trade of shortTrades) {
+                    if (remaining <= 0) break;
+                    const coverShares = Math.min(trade.shares, remaining);
+                    const profitLoss = (trade.price - price) * coverShares;
+
+                    trade.shares -= coverShares;
+                    balance += amount;
+                    totalProfitLoss += profitLoss;
+                    remaining -= coverShares;
+
+                    if (trade.shares === 0) {
+                        trades = trades.filter(t => t !== trade);
+                    }
+                }
+
+                if (remaining > 0) {
+                    output.innerHTML += "Insufficient shares to complete cover.<br>";
+                    return;
+                }
+
+                setStorage("balance", balance);
+                setStorage("trades", trades);
+                await updateDisplay();
+                output.innerHTML += `<span class="${totalProfitLoss >= 0 ? 'profit' : 'loss'}">Covered $${amount.toFixed(2)} of ${stock} at $${price.toFixed(2)}/share. P/L: $${totalProfitLoss.toFixed(2)}</span><br>`;
+            } else if (command === "market" && args.length === 2) {
+                const newMarket = args[1].toUpperCase();
+                if (!marketData[newMarket]) {
+                    output.innerHTML += `Invalid market. Available: ${Object.keys(marketData).join(', ')}<br>`;
+                    return;
+                }
+                currentMarket = newMarket;
+                output.innerHTML += `Switched to ${newMarket} market (${marketData[newMarket].fmpCode}).<br>`;
+            } else if (command === "reset") {
+                balance = 10000;
+                trades = [];
+                setStorage("balance", balance);
+                setStorage("trades", trades);
+                await updateDisplay();
+                output.innerHTML += "Portfolio reset.<br>";
+            } else {
+                output.innerHTML += "Command not recognized. Type 'help' for commands.<br>";
+            }
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function updateDisplay() {
+            document.getElementById("balance").innerText = `Balance: $${balance.toFixed(2)}`;
+            const tradesList = document.getElementById("trades");
+            tradesList.innerHTML = "";
+
+            for (const trade of trades) {
+                const li = document.createElement("li");
+                const currentPrice = await fetchStockPrice(trade.stock) || trade.price;
+                let profitLoss = 0;
+
+                if (trade.type === "buy") {
+                    profitLoss = (currentPrice - trade.price) * trade.shares;
+                } else if (trade.type === "short") {
+                    profitLoss = (trade.price - currentPrice) * trade.shares;
+                }
+
+                const resultClass = profitLoss >= 0 ? "profit" : "loss";
+                li.innerHTML = `
+                                <span class="stock-name">${trade.stock}</span> - $${(trade.shares * trade.price).toFixed(2)} invested<br>
+                                ${trade.shares.toFixed(2)} shares @ $${trade.price.toFixed(2)}
+                                <span class="${resultClass}">
+                                    (Current: $${currentPrice.toFixed(2)}, P/L: $${profitLoss.toFixed(2)})
+                                </span>
+                            `;
+                tradesList.appendChild(li);
+            }
+        }
+
+        function showAuthModal() {
+            document.getElementById("auth-modal").style.display = "flex";
+        }
+
+        function hideAuthModal() {
+            document.getElementById("auth-modal").style.display = "none";
+        }
+
+        async function handleSignUp() {
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            if (!email || !password) {
+                alert("Email and password are required.");
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                await setDoc(doc(db, "users", userCredential.user.uid), { balance, trades });
+                await loadUserData();
+                hideAuthModal();
+                document.getElementById("auth-link").innerText = "Sign out";
+            } catch (error) {
+                console.error("Sign-up error:", error.message);
+                alert("Sign-up failed: " + error.message);
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            if (!email || !password) {
+                alert("Email and password are required.");
+                return;
+            }
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                await loadUserData();
+                hideAuthModal();
+                document.getElementById("auth-link").innerText = "Sign out";
+            } catch (error) {
+                console.error("Login error:", error.message);
+                alert("Login failed: " + error.message);
+            }
+        }
+
+        async function handleSignOut() {
+            try {
+                await signOut(auth);
+                balance = 10000;
+                trades = [];
+                setStorage("balance", balance);
+                setStorage("trades", trades);
+                await updateDisplay();
+                document.getElementById("auth-link").innerText = "Sign up or log in to sync your trades";
+            } catch (error) {
+                console.error("Sign-out error:", error.message);
+            }
+        }
+
+        let debounceTimeout;
+        function getStockQuery(input) {
+            const words = input.trim().split(" ");
+            const validCommands = ["buy", "sell", "short", "cover", "market"];
+            if (words.length < 2 || !validCommands.includes(words[0].toLowerCase())) {
+                return { query: null, startIndex: -1 };
+            }
+            const secondWord = words[1];
+            if (words.length === 2) {
+                return { query: secondWord, startIndex: input.indexOf(" ") + 1 };
+            }
+            const lastWord = words[words.length - 1];
+            if (!isNaN(lastWord) && lastWord !== "") {
+                return { query: null, startIndex: -1 };
+            }
+            const query = words.slice(1, -1).join(" ") || secondWord;
+            return { query, startIndex: input.indexOf(" ") + 1 };
+        }
+
+        document.getElementById("command").addEventListener("input", function () {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(async () => {
+                const input = this.value.trim();
+                const { query: searchQuery, startIndex } = getStockQuery(input);
+                const suggestionsDiv = document.getElementById("suggestions");
+
+                if (!searchQuery || searchQuery.length < 2) {
+                    suggestionsDiv.style.display = "none";
+                    return;
+                }
+
+                const currentMarketInfo = marketData[currentMarket] || marketData['NASDAQ'];
+                const url = `https://financialmodelingprep.com/api/v3/search?query=${encodeURIComponent(searchQuery)}&limit=10&exchange=${currentMarketInfo.fmpCode}&apikey=${FMP_API_KEY}`;
+
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (Array.isArray(data)) {
+                        displaySuggestions(data, searchQuery, startIndex);
+                    }
+                } catch (error) {
+                    // Silent fail
+                    suggestionsDiv.style.display = "none";
+                }
+            }, 300);
+        });
+
+        function displaySuggestions(data, searchQuery, startIndex) {
+            const suggestionsDiv = document.getElementById("suggestions");
+            suggestionsDiv.innerHTML = "";
+            if (!data || data.length === 0) {
+                suggestionsDiv.style.display = "none";
+                return;
+            }
+            data.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "suggestion-item";
+                div.textContent = `${item.name} (${item.symbol})`;
+                div.addEventListener("click", function () {
+                    const commandInput = document.getElementById("command");
+                    const words = commandInput.value.trim().split(" ");
+                    words[1] = item.symbol;
+                    commandInput.value = words.join(" ") + " ";
+                    suggestionsDiv.style.display = "none";
+                });
+                suggestionsDiv.appendChild(div);
+            });
+            suggestionsDiv.style.display = "block";
+        }
+
+        window.onload = async function () {
+            await loadUserData();
+            document.getElementById("submitBtn").addEventListener("click", processCommand);
+            document.getElementById("command").addEventListener("keypress", (event) => {
+                if (event.key === "Enter") processCommand();
+            });
+            document.getElementById("auth-link").addEventListener("click", () => {
+                if (auth.currentUser) handleSignOut();
+                else showAuthModal();
+            });
+            document.getElementById("signup-btn").addEventListener("click", handleSignUp);
+            document.getElementById("login-btn").addEventListener("click", handleLogin);
+            document.getElementById("auth-modal").addEventListener("click", (event) => {
+                if (event.target === document.getElementById("auth-modal")) {
+                    hideAuthModal();
+                }
+            });
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    document.getElementById("auth-link").innerText = "Sign out";
+                    await loadUserData();
+                } else {
+                    document.getElementById("auth-link").innerText = "Sign up or log in to sync your trades";
+                    balance = getStorage("balance", 10000);
+                    trades = getStorage("trades", []);
+                    await updateDisplay();
+                }
+            });
+        };
+    </script>
+</head>
+<body>
+    <div id="terminal">
+        <h1>Virtual Portfolio Tracker</h1>
+        <div id="balance-card">
+            <p id="balance">Balance: $10000.00</p>
+        </div>
+        <div id="command-container">
+            <input type="text" id="command" placeholder="Enter command. Type help for a list of commands.">
+            <button id="submitBtn">Submit</button>
+            <div id="suggestions"></div>
+        </div>
+        <div id="output"></div>
+        <div id="auth-link">Sign up or log in to sync your trades</div>
+    </div>
+    <div id="trades-section">
+        <h2><i class="fas fa-chart-line"></i> Active Trades</h2>
+        <ul id="trades"></ul>
+    </div>
+    <div id="auth-modal">
+        <div id="auth-modal-content">
+            <h2>Sign Up / Log In</h2>
+            <input type="email" id="email" placeholder="Email">
+            <input type="password" id="password" placeholder="Password">
+            <button id="signup-btn">Sign Up</button>
+            <button id="login-btn">Log In</button>
+        </div>
+    </div>
+</body>
+</html>
